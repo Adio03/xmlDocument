@@ -7,13 +7,24 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@XmlRootElement(name = "Document", namespace = "urn:iso:std:iso:20022:tech:xsd:pacs.008.001.12")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class PaymentRequestPacs008 {
     @XmlElement(name = "FIToFICstmrCdtTrf", required = true)
     private FIToFICstmrCdtTrf ficoCustomerCreditTransfer;
 
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class FIToFICstmrCdtTrf {
         @XmlElement(name = "GrpHdr", required = true)
         private GroupHeader grpHdr;
@@ -29,6 +40,11 @@ public class PaymentRequestPacs008 {
 
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class GroupHeader {
         @XmlElement(name = "MsgId", required = true)
         private String msgId;
@@ -56,22 +72,37 @@ public class PaymentRequestPacs008 {
 
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class SettlementInformation {
         @XmlElement(name = "SttlmMtd", required = true)
         private String sttlmMtd;
 
     }
 
-    // Agent Definition
+
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class Agent {
         @XmlElement(name = "FinInstnId", required = true)
         private FinancialInstitutionId finInstnId;
-      r
+
     }
 
     // Financial Institution
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class FinancialInstitutionId {
         @XmlElement(name = "BICFI")
         private String bicfi;
@@ -83,6 +114,11 @@ public class PaymentRequestPacs008 {
 
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class MemberId {
         @XmlElement(name = "MmbId", required = true)
         private String mmbId;
@@ -91,6 +127,11 @@ public class PaymentRequestPacs008 {
 
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class CreditTransferTransactionInformation {
 
         @XmlElement(name = "PmtId", required = true)
@@ -141,6 +182,11 @@ public class PaymentRequestPacs008 {
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class PaymentId {
         @XmlElement(name = "InstrId", required = true)
         private String instrId;
@@ -152,6 +198,11 @@ public class PaymentRequestPacs008 {
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class PaymentTypeInformation {
         @XmlElement(name = "ClrChanl", required = true)
         private String clrChanl;
@@ -165,6 +216,11 @@ public class PaymentRequestPacs008 {
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class Proprietary {
         @XmlElement(name = "Prtry", required = true)
         private String prtry;
@@ -172,6 +228,11 @@ public class PaymentRequestPacs008 {
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class Amount {
         @XmlAttribute(name = "Ccy")
         private String currency;
@@ -182,6 +243,11 @@ public class PaymentRequestPacs008 {
 
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class Party {
         @XmlElement(name = "Nm", required = true)
         private String name;
