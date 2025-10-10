@@ -16,7 +16,8 @@ public class IdentityVerificationReportAcmt024Controller {
 
 
     @PostMapping(value = "/acmt024", consumes = MediaType.APPLICATION_XML_VALUE)
-    public void receiveAcmt024CallBack(@RequestBody String acmt024Xml) {
+    public void receiveAcmt024CallBack(@RequestBody String acmt024Xml) throws Exception {
+        identityVerificationReportAcmt024UseCase.recieveAcmt024CallBack(acmt024Xml);
 
 
     }

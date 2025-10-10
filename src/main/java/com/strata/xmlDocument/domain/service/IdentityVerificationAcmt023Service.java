@@ -66,7 +66,8 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
         PublicKey publicKey = GenerateKey.loadPublicKey(PUBLIC_KEY_PATH);
 
         Signer.sign(createXmlDocument, privateKey);
-       String encryptData = Encrypter.encrypt(createXmlDocument, publicKey);
+        String encryptData = Encrypter.encrypt(createXmlDocument, publicKey);
+        log.info("DATA =====>>>>>> {}",encryptData);
         HttpSender.sendXML(encryptData,API_URL);
 
         return identityVerificationAcmt023.getIdVrfctnReq().getAssgnmt().getMsgId();

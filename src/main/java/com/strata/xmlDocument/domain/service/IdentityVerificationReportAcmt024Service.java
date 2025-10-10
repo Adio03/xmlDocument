@@ -4,13 +4,17 @@ import com.strata.xmlDocument.application.input.IdentityVerificationReportAcmt02
 import com.strata.xmlDocument.infrastructure.adapter.output.utils.*;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+@Slf4j
 @Setter
 @RequiredArgsConstructor
+@Service
 public class IdentityVerificationReportAcmt024Service implements IdentityVerificationReportAcmt024UseCase {
 
     private static final String INSTITUTION_ID = "999058";
@@ -24,11 +28,10 @@ public class IdentityVerificationReportAcmt024Service implements IdentityVerific
     public void recieveAcmt024CallBack(String encryptData) throws Exception {
         PrivateKey privateKey = GenerateKey.loadPrivateKey(PRIVATE_KEY_PATH);
         PublicKey publicKey = GenerateKey.loadPublicKey(PUBLIC_KEY_PATH);
-
         Document decryptedDocument = Decrypter.decrypt(encryptData,privateKey);
         Signer.validateXmlSignature(decryptedDocument,publicKey);
         String decryptedStringValue = XmlDocumentConverter.documentToString(decryptedDocument);
-
+        log.info("DECRYPTED  ========>>>>>>> {}", decryptedStringValue);
         FileSaver.saveDecryptMessageToFile(decryptedStringValue);
 
     }
