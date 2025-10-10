@@ -1,51 +1,66 @@
 package com.strata.xmlDocument.infrastructure.adapter.output.utils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.xml.security.encryption.EncryptedData;
 import org.apache.xml.security.encryption.EncryptedKey;
 import org.apache.xml.security.encryption.XMLCipher;
 import org.apache.xml.security.keys.KeyInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
 import java.security.PublicKey;
+@Slf4j
 public class Encrypter {
     static {
-        // Initialize the XML Security library
+
         org.apache.xml.security.Init.init();
     }
 
     private Encrypter() {
-        // Private constructor to prevent instantiation of this utility class.
+
     }
 
-    public static String encrypt(Document doc, PublicKey pubKey) throws Exception {
+    public static String encrypt(Document document, PublicKey pubKey) throws Exception {
 
-        // 1. Generate AES-256 session key
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         keyGen.init(256);
         SecretKey sessionKey = keyGen.generateKey();
 
-        // 2. Wrap session key with RSA public key (RSA-OAEP)
+
         XMLCipher keyCipher = XMLCipher.getInstance(XMLCipher.RSA_OAEP);
         keyCipher.init(XMLCipher.WRAP_MODE, pubKey);
-        EncryptedKey encryptedKey = keyCipher.encryptKey(doc, sessionKey);
+        EncryptedKey encryptedKey = keyCipher.encryptKey(document, sessionKey);
 
-        // 3. Encrypt sensitive XML data using AES-256-GCM
         XMLCipher xmlCipher = XMLCipher.getInstance(XMLCipher.AES_256_GCM);
         xmlCipher.init(XMLCipher.ENCRYPT_MODE, sessionKey);
 
-        // 4. Attach encrypted session key info inside <EncryptedData>
+
         EncryptedData encryptedData = xmlCipher.getEncryptedData();
-        KeyInfo keyInfo = new KeyInfo(doc);
+        KeyInfo keyInfo = new KeyInfo(document);
         keyInfo.add(encryptedKey);
         encryptedData.setKeyInfo(keyInfo);
 
-        // 5. Locate the XML element to encrypt (example: <SensitiveData>)
-        Element sensitiveData = (Element) doc.getElementsByTagName("SensitiveData").item(0);
+        Element elementToEncrypt = (Element) document.getElementsByTagName("IdVrfctnReq").item(0);
 
-        // 6. Perform encryption and replace the element with <EncryptedData>
-        xmlCipher.doFinal(doc, sensitiveData, true);
-        return xmlCipher.toString();
+
+        if (elementToEncrypt == null) {
+            throw new IllegalStateException("Element 'IdVrfctnReq' not found in document!");
+        }
+
+        log.info("Encrypting element: {}", elementToEncrypt.getTagName());
+
+        xmlCipher.doFinal(document, elementToEncrypt, true);
+
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(document), new StreamResult(writer));
+
+        return writer.toString();
     }
 }
