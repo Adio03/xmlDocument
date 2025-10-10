@@ -5,15 +5,19 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 @Slf4j
 public class GenerateKey {
     public static void main(String[] args) {
-        String privateKeyName = "kolomoni_private.pem";
-        String publicKeyName = "kolomoni_public.pem";
+        String privateKeyName = "banks_private.pem";
+        String publicKeyName = "banks_public.pem";
         Map<String, Object> keys = generateKeyPair(privateKeyName, publicKeyName);
 
         try (FileOutputStream fos = new FileOutputStream(privateKeyName)) {
@@ -43,6 +47,20 @@ public class GenerateKey {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static PrivateKey loadPrivateKey(String filePath) throws Exception {
+        byte[] keyBytes = Files.readAllBytes(Paths.get(filePath));
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePrivate(spec);
+    }
+
+    public static PublicKey loadPublicKey(String filePath) throws Exception {
+        byte[] keyBytes = Files.readAllBytes(Paths.get(filePath));
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePublic(spec);
     }
 
 

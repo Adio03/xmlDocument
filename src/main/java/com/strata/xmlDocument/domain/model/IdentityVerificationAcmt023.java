@@ -1,9 +1,6 @@
 package com.strata.xmlDocument.domain.model;
 import jakarta.xml.bind.annotation.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @XmlRootElement(name = "Document", namespace = "urn:iso:std:iso:20022:tech:xsd:acmt.023.001.04")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -11,6 +8,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class IdentityVerificationAcmt023 {
     @XmlElement(name = "IdVrfctnReq", required = true)
     private IdVerificationRequest idVrfctnReq;
@@ -20,6 +18,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class IdVerificationRequest {
         @XmlElement(name = "Assgnmt", required = true)
         private Assignment assgnmt;
@@ -34,6 +33,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class Assignment {
         @XmlElement(name = "MsgId", required = true)
         private String msgId;
@@ -57,6 +57,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class PartyWrapper {
         @XmlElement(name = "Pty", required = true)
         private Party pty;
@@ -67,6 +68,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class Party {
         @XmlElement(name = "Nm", required = true)
         private String nm;
@@ -78,6 +80,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class Assigner {
         @XmlElement(name = "Pty", required = true)
         private Party pty;
@@ -91,6 +94,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class Assignee {
         @XmlElement(name = "Agt", required = true)
         private Agent agt;
@@ -101,6 +105,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class Agent {
         @XmlElement(name = "FinInstnId", required = true)
         private FinancialInstitutionId finInstnId;
@@ -111,6 +116,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class FinancialInstitutionId {
         @XmlElement(name = "BICFI")
         private String bicfi;
@@ -124,6 +130,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class ClearingSystemMemberId {
         @XmlElement(name = "MmbId", required = true)
         private String mmbId;
@@ -134,6 +141,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class Verification {
         @XmlElement(name = "Id", required = true)
         private String id;
@@ -148,6 +156,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class PartyAndAccountId {
         @XmlElement(name = "Pty", required = true)
         private Party pty;
@@ -162,6 +171,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class Account {
         @XmlElement(name = "Id", required = true)
         private AccountId id;
@@ -172,6 +182,7 @@ public class IdentityVerificationAcmt023 {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class AccountId {
         @XmlElement(name = "IBAN", required = true)
         private String iban;

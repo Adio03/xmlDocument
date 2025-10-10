@@ -47,6 +47,13 @@
             <artifactId>jakarta.xml.bind-api</artifactId>
             <version>4.0.4</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>4.0.5</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.xml.security/xml-security -->
         <!-- https://mvnrepository.com/artifact/org.apache.santuario/xmlsec -->
         <dependency>
