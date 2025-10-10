@@ -19,8 +19,6 @@ import java.time.format.DateTimeFormatter;
 @EnableAsync
 @Slf4j
 public class IdentityVerificationAcmt023Service implements IdentityVerificationAcmt023UseCase {
-
-
     private static final String INSTITUTION_ID = "999058";
     private static final String CREATOR_NAME  = "NIBSS";
     private static final String PRIVATE_KEY_PATH = "C:\\Users\\semicolon\\Downloads\\xmlDocument\\xmlDocument\\banks_private.pem";

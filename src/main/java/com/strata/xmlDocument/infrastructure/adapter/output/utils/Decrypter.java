@@ -50,28 +50,6 @@ public class Decrypter {
         return document;
     }
 
-    public static void saveDecryptMessageToFile(String decryptedXml) throws Exception {
-
-        String filePath = "C:/Users/semicolon/Downloads/xmlDocument/debug_decrypted.xml";
-        log.info("Saving to file =======>>>>>> {}", filePath);
-        try (FileWriter writer = new FileWriter(filePath)) {
-            log.info("about to save to file ======>>>>>> {}",writer.getEncoding());
-            writer.write(decryptedXml);
-            writer.flush();
-            log.info("completely save to file");
-        }
-        log.info("✅ Decrypted XML written to file (for testing only): {}", filePath);
-
-    }
 
 
-    public static String documentToString(Document doc) throws Exception {
-        javax.xml.transform.TransformerFactory factory = javax.xml.transform.TransformerFactory.newInstance();
-        javax.xml.transform.Transformer transformer = factory.newTransformer();
-        java.io.StringWriter sw = new java.io.StringWriter();
-        javax.xml.transform.dom.DOMSource source = new javax.xml.transform.dom.DOMSource(doc);
-        javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(sw);
-        transformer.transform(source, result);
-        return sw.toString();
-    }
 }

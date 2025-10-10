@@ -76,8 +76,6 @@ public class GenerateKey {
         return kf.generatePublic(spec);
     }
 
-
-
     private static String convertKeyToPEM(Key key) {
         if (key == null) throw new IllegalArgumentException("Key cannot be null");
 
@@ -94,8 +92,6 @@ public class GenerateKey {
         } else {
             throw new IllegalArgumentException("Unsupported key type: " + key.getClass().getName());
         }
-
-        // Wrap Base64 string to 64 characters per line
         StringBuilder wrappedKey = new StringBuilder();
         for (int i = 0; i < encodedKey.length(); i += 64) {
             int end = Math.min(i + 64, encodedKey.length());
