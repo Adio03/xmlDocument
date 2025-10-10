@@ -50,18 +50,32 @@ public class GenerateKey {
     }
 
     public static PrivateKey loadPrivateKey(String filePath) throws Exception {
-        byte[] keyBytes = Files.readAllBytes(Paths.get(filePath));
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        String key = new String(Files.readAllBytes(Paths.get(filePath)))
+                .replaceAll("-----BEGIN (.*)-----", "")
+                .replaceAll("-----END (.*)-----", "")
+                .replaceAll("\\s+", "");
+
+        byte[] decoded = Base64.getDecoder().decode(key);
+
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return kf.generatePrivate(spec);
     }
 
+
     public static PublicKey loadPublicKey(String filePath) throws Exception {
-        byte[] keyBytes = Files.readAllBytes(Paths.get(filePath));
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        String key = new String(Files.readAllBytes(Paths.get(filePath)))
+                .replaceAll("-----BEGIN (.*)-----", "")
+                .replaceAll("-----END (.*)-----", "")
+                .replaceAll("\\s+", "");
+
+        byte[] decoded = Base64.getDecoder().decode(key);
+
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return kf.generatePublic(spec);
     }
+
 
 
     private static String convertKeyToPEM(Key key) {

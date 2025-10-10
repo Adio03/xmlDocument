@@ -1,6 +1,5 @@
-package com.strata.xmlDocument.infrastructure.adapter.input;
+package com.strata.xmlDocument.infrastructure.adapter.input.dtos.request;
 
-import jdk.jfr.DataAmount;
 import lombok.Data;
 
 @Data
