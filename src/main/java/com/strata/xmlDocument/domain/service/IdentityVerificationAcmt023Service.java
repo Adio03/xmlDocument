@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 @Service
 @EnableAsync
 @Slf4j
-public class XmlCommunicationService implements IdentityVerificationAcmt023UseCase {
+public class IdentityVerificationAcmt023Service implements IdentityVerificationAcmt023UseCase {
 
 
     private static final String INSTITUTION_ID = "999058";
@@ -129,11 +129,4 @@ public class XmlCommunicationService implements IdentityVerificationAcmt023UseCa
         return ptyAndAcctId;
     }
 
-
-    public static void main(String[] args) throws Exception {
-        PrivateKey privateKey = GenerateKey.loadPrivateKey(PRIVATE_KEY_PATH);
-        PublicKey publicKey = GenerateKey.loadPublicKey(PUBLIC_KEY_PATH);
-        log.info("PRIVATE KEY =====>>> :: {}",privateKey.toString());
-        log.info("PUBLIC KEY =====>>> :: {}",publicKey.toString());
-    }
 }

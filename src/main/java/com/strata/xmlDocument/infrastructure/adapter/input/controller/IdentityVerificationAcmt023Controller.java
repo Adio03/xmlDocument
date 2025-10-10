@@ -4,13 +4,15 @@ import com.strata.xmlDocument.application.input.IdentityVerificationAcmt023UseCa
 import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.VerificationRequest;
 import com.strata.xmlDocument.infrastructure.adapter.input.dtos.response.MessageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/xml")
 @RequiredArgsConstructor
-public class XmlCommunicationController {
+public class IdentityVerificationAcmt023Controller {
 
     private final IdentityVerificationAcmt023UseCase  identityVerificationAcmt023UseCase;
 
@@ -19,8 +21,11 @@ public class XmlCommunicationController {
     public ResponseEntity<MessageResponse> sendXmlRequest(@RequestBody VerificationRequest request) throws Exception {
         String response = identityVerificationAcmt023UseCase.identityVerification(request);
         MessageResponse messageResponse = MessageResponse.builder().messageId(response).build();
+
         return ResponseEntity.accepted().body(messageResponse);
     }
 
+    }
 
-}
+
+
