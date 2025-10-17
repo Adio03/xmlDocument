@@ -1,5 +1,9 @@
 package com.strata.xmlDocument.application.input;
 
+import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.VerificationRequest;
+
 public interface IdentityVerificationReportAcmt024UseCase {
-    void recieveAcmt024CallBack(String encryptData) throws Exception;
+    void identityVerificationReportInboundAcmt024(String encryptData) throws Exception;
+
+    String identityVerificationReportOutboundAcmt024(VerificationRequest verificationRequest);
 }

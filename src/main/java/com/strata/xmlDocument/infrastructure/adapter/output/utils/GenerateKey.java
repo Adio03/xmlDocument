@@ -54,6 +54,8 @@ public class GenerateKey {
                 .replaceAll("-----BEGIN (.*)-----", "")
                 .replaceAll("-----END (.*)-----", "")
                 .replaceAll("\\s+", "");
+        log.info("Private key ===============>>>>>>>>> {}", key);
+
 
         byte[] decoded = Base64.getDecoder().decode(key);
 
@@ -68,6 +70,7 @@ public class GenerateKey {
                 .replaceAll("-----BEGIN (.*)-----", "")
                 .replaceAll("-----END (.*)-----", "")
                 .replaceAll("\\s+", "");
+        log.info("public key =============>>>>>>>>> {}",key);
 
         byte[] decoded = Base64.getDecoder().decode(key);
 

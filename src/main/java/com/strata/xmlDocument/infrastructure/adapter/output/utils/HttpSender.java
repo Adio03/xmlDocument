@@ -1,10 +1,12 @@
 package com.strata.xmlDocument.infrastructure.adapter.output.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
+@Slf4j
 public class HttpSender {
 
 
@@ -20,9 +22,9 @@ public class HttpSender {
                     .build();
 
             client.send(request, HttpResponse.BodyHandlers.discarding());
-            System.out.println("Message sent successfully");
+            log.info("Message sent successfully");
         } catch (Exception e) {
-            System.err.println("Error sending message: " + e.getMessage());
+            log.error("Error sending message: {}", e.getMessage());
         }
     }
 }
