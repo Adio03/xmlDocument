@@ -17,7 +17,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI appInfo() {
         Server server = new Server();
-        server.setUrl("http://localhost:9000");
+        server.setUrl("http://localhost:9100");
 
         return new OpenAPI()
                 .servers(List.of(server))
