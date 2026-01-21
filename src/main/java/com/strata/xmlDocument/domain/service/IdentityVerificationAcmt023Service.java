@@ -7,7 +7,6 @@ import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.Verifica
 import com.strata.xmlDocument.infrastructure.adapter.output.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
@@ -29,11 +28,11 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
     @Value("${creator.name}")
     private String creatorName;
 
-    @Value("${nibss.private.key.path}")
-    private String privateKeyPath;
+//    @Value("${nibss.private.key.path}")
+    private final String privateKeyPath = "C:\\Users\\semicolon\\IdeaProjects\\xmlDocument\\banks_private.pem";
 
-    @Value("${nibss.public.key.path}")
-    private String publicKeyPath;
+//    @Value("${nibss.public.key.path}")
+    private final String publicKeyPath = "C:\\Users\\semicolon\\IdeaProjects\\xmlDocument\\banks_public.pem";
 
     @Value("${nibss.api.url}")
     private String apiUrl;
@@ -76,6 +75,10 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
 
         );
 
+        return completeDocumentSetup(createXmlDocument, identityVerificationAcmt023);
+    }
+
+    private String completeDocumentSetup(Document createXmlDocument, IdentityVerificationAcmt023 identityVerificationAcmt023) throws Exception {
         PrivateKey privateKey = GenerateKey.loadPrivateKey(privateKeyPath);
         PublicKey publicKey = GenerateKey.loadPublicKey(publicKeyPath);
         String rootTag = "IdVrfctnReq";
@@ -83,7 +86,8 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
         Signer.sign(createXmlDocument, privateKey);
         String encryptData = Encrypter.encrypt(createXmlDocument, publicKey,rootTag);
         log.info("DATA =====>>>>>> {}",encryptData);
-        HttpSender.sendXML(encryptData, apiUrl);
+        String url ="http://localhost:9200/api/nps/acmt023/inbound_acmt023";
+        HttpSender.sendXML(encryptData, url);
 
         return identityVerificationAcmt023.getIdVrfctnReq().getAssgnmt().getMsgId();
     }
@@ -148,10 +152,14 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
         PrivateKey privateKey = GenerateKey.loadPrivateKey(privateKeyPath);
         PublicKey publicKey = GenerateKey.loadPublicKey(publicKeyPath);
         Document decryptedDocument = Decrypter.decrypt(encryptedData,privateKey);
-        Signer.validateXmlSignature(decryptedDocument,publicKey);
+
+       boolean isValid = Signer.validateXmlSignature(decryptedDocument,publicKey);
+        if(!isValid){
+            log.error("Invalid Signature ===================>>>>>>>>>>>>>");
+        }
         String decryptedStringValue = XmlDocumentConverter.documentToString(decryptedDocument);
         log.info("DECRYPTED  ========>>>>>>> {}", decryptedStringValue);
-        String messageType = MessageTypes.ACMT_024.name();
+        String messageType = MessageTypes.ACMT_023.name();
         FileSaver.saveDecryptMessageToFile(decryptedStringValue,messageType);
     }
 

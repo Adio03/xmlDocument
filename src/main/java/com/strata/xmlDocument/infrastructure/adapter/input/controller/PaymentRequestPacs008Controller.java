@@ -1,7 +1,7 @@
 package com.strata.xmlDocument.infrastructure.adapter.input.controller;
 
 import com.strata.xmlDocument.domain.service.PaymentRequestPacs008Service;
-import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.PaymentRequest;
+import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.PaymentRequestMap;
 import com.strata.xmlDocument.infrastructure.adapter.input.dtos.response.MessageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -18,8 +18,8 @@ public class PaymentRequestPacs008Controller {
     private final PaymentRequestPacs008Service paymentRequestPacs008Service;
 
     @PostMapping("/outbound_pacs008")
-    public ResponseEntity<?> sendOutboundPacs008(@RequestBody PaymentRequest paymentRequest) throws Exception {
-        String response = paymentRequestPacs008Service.paymentRequestPacs008(paymentRequest);
+    public ResponseEntity<?> sendOutboundPacs008(@RequestBody PaymentRequestMap paymentRequestMap) throws Exception {
+        String response = paymentRequestPacs008Service.paymentRequestPacs008(paymentRequestMap);
         MessageResponse messageResponse = MessageResponse.builder().messageId(response).build();
         return ResponseEntity.ok(messageResponse);
     }

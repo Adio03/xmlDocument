@@ -4,7 +4,7 @@ import com.strata.xmlDocument.application.input.PaymentApprovalPacs002UseCase;
 import com.strata.xmlDocument.domain.model.PaymentApprovalPacs002;
 import com.strata.xmlDocument.domain.model.PaymentRequestPacs008;
 import com.strata.xmlDocument.domain.model.types.MessageTypes;
-import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.PaymentRequest;
+import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.PaymentRequestMap;
 import com.strata.xmlDocument.infrastructure.adapter.output.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,8 +31,8 @@ public class PaymentApprovalPacs002Service implements PaymentApprovalPacs002UseC
     private String pacs002ApiUrl;
 
     @Override
-    public String generatePaymentApproval(PaymentRequest paymentRequest, PaymentRequestPacs008 originalRequest) throws Exception {
-        PaymentApprovalPacs002 pacs002 = buildPaymentApproval(paymentRequest, originalRequest);
+    public String generatePaymentApproval(PaymentRequestMap paymentRequestMap, PaymentRequestPacs008 originalRequest) throws Exception {
+        PaymentApprovalPacs002 pacs002 = buildPaymentApproval(paymentRequestMap, originalRequest);
         Document pacs002Document = XmlDocumentConverter.marshallToDocument(pacs002, PaymentApprovalPacs002.class);
         
         PrivateKey privateKey = GenerateKey.loadPrivateKey(privateKeyPath);
@@ -49,15 +49,15 @@ public class PaymentApprovalPacs002Service implements PaymentApprovalPacs002UseC
         return pacs002.getFiToFiPmtStsRpt().getGrpHdr().getMsgId();
     }
 
-    public PaymentApprovalPacs002 buildPaymentApproval(PaymentRequest paymentRequest, PaymentRequestPacs008 originalRequest) {
+    public PaymentApprovalPacs002 buildPaymentApproval(PaymentRequestMap paymentRequestMap, PaymentRequestPacs008 originalRequest) {
         String msgId = MessageIdGenerator.generateMessageId(INSTITUTION_ID);
         PaymentRequestPacs008.GroupHeader ficoGrpHdr = originalRequest.getFicoCustomerCreditTransfer().getGrpHdr();
         
         PaymentApprovalPacs002.GroupHeader groupHeader = PaymentApprovalPacs002.GroupHeader.builder()
                 .msgId(msgId)
                 .creDtTm(LocalDateTime.now().toString())
-                .instgAgt(buildAgent(paymentRequest.getInstructingAgentBic(), INSTITUTION_ID))
-                .instdAgt(buildAgent(paymentRequest.getInstructedAgentBic(), paymentRequest.getInstructedAgentBic()))
+                .instgAgt(buildAgent(paymentRequestMap.getInstructingAgentBic(), INSTITUTION_ID))
+                .instdAgt(buildAgent(paymentRequestMap.getInstructedAgentBic(), paymentRequestMap.getInstructedAgentBic()))
                 .build();
 
         PaymentApprovalPacs002.OriginalGroupInfoAndStatus originalGroupInfoAndStatus = PaymentApprovalPacs002.OriginalGroupInfoAndStatus.builder()
@@ -68,10 +68,10 @@ public class PaymentApprovalPacs002Service implements PaymentApprovalPacs002UseC
                 .build();
 
         PaymentApprovalPacs002.TransactionInfoAndStatus txInfoAndStatus = PaymentApprovalPacs002.TransactionInfoAndStatus.builder()
-                .instgAgt(buildAgent(paymentRequest.getInstructingAgentBic(), INSTITUTION_ID))
-                .instdAgt(buildAgent(paymentRequest.getInstructedAgentBic(), paymentRequest.getInstructedAgentBic()))
+                .instgAgt(buildAgent(paymentRequestMap.getInstructingAgentBic(), INSTITUTION_ID))
+                .instdAgt(buildAgent(paymentRequestMap.getInstructedAgentBic(), paymentRequestMap.getInstructedAgentBic()))
                 .orgnlTxRef(PaymentApprovalPacs002.OriginalTransactionReference.builder()
-                        .intrBkSttlmDt(paymentRequest.getInterbankSettlementDate())
+                        .intrBkSttlmDt(paymentRequestMap.getInterbankSettlementDate())
                         .build())
                 .build();
 

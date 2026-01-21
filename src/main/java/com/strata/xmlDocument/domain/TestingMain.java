@@ -22,6 +22,7 @@ public class TestingMain {
     public static void main(String[] args) throws Exception {
         PrivateKey privateKey = GenerateKey.loadPrivateKey(PRIVATE_KEY_PATH);
         PublicKey publicKey = GenerateKey.loadPublicKey(PUBLIC_KEY_PATH);
+        publicKey.toString();
         String xml = """
                 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
                 <ns2:Document xmlns:ns2="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.12">

@@ -5,7 +5,7 @@ import com.strata.xmlDocument.application.input.PaymentRequestPacs008UseCase;
 import com.strata.xmlDocument.domain.model.PaymentApprovalPacs002;
 import com.strata.xmlDocument.domain.model.PaymentRequestPacs008;
 import com.strata.xmlDocument.domain.model.types.MessageTypes;
-import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.PaymentRequest;
+import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.PaymentRequestMap;
 import com.strata.xmlDocument.infrastructure.adapter.output.utils.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +29,11 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
     
     private final PaymentApprovalPacs002UseCase paymentApprovalService;
 
-    @Value("${nibss.private.key.path}")
-    private String privateKeyPath;
+    //    @Value("${nibss.private.key.path}")
+    private final String privateKeyPath = "C:\\Users\\semicolon\\IdeaProjects\\xmlDocument\\banks_private.pem";
 
-    @Value("${nibss.public.key.path}")
-    private String publicKeyPath;
+    //    @Value("${nibss.public.key.path}")
+    private final String publicKeyPath = "C:\\Users\\semicolon\\IdeaProjects\\xmlDocument\\banks_public.pem";
 
     @Value("${nibss.api.url.pacs008}")
     private String pacs008ApiUrl;
@@ -41,8 +41,8 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
     private String pacs002ApiUrl;
 
     @Override
-    public String paymentRequestPacs008(PaymentRequest paymentRequest) throws Exception {
-        PaymentRequestPacs008 pacs008 = buildPacs008(paymentRequest);
+    public String paymentRequestPacs008(PaymentRequestMap paymentRequestMap) throws Exception {
+        PaymentRequestPacs008 pacs008 = buildPacs008(paymentRequestMap);
         Document document = XmlDocumentConverter.marshallToDocument(pacs008, PaymentRequestPacs008.class);
         PrivateKey privateKey = GenerateKey.loadPrivateKey(privateKeyPath);
         PublicKey publicKey = GenerateKey.loadPublicKey(publicKeyPath);
@@ -50,8 +50,9 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
         Signer.sign(document, privateKey);
         String encryptedData = Encrypter.encrypt(document, publicKey, rootTag);
         log.info("ENCRYPTED PAYMENT REQUEST DATA =====>>>>>> {}", encryptedData.substring(0, Math.min(encryptedData.length(), 100)) + "...");
+        String url = "http://localhost:9200/api/nps/pacs008/outbound_pacs008";
         try {
-            HttpSender.sendXML(encryptedData, pacs008ApiUrl);
+            HttpSender.sendXML(encryptedData, url);
         }catch (Exception exception){
             log.error(exception.getMessage());
         }
@@ -59,14 +60,14 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
     }
 
 
-    private PaymentApprovalPacs002 buildPacs002Response(PaymentRequest paymentRequest, PaymentRequestPacs008 pacs008) {
+    private PaymentApprovalPacs002 buildPacs002Response(PaymentRequestMap paymentRequestMap, PaymentRequestPacs008 pacs008) {
         String msgId = MessageIdGenerator.generateMessageId(institutionId);
         PaymentRequestPacs008.GroupHeader ficoGrpHdr = pacs008.getFicoCustomerCreditTransfer().getGrpHdr();
         PaymentApprovalPacs002.GroupHeader groupHeader = PaymentApprovalPacs002.GroupHeader.builder()
                 .msgId(msgId)
                 .creDtTm(LocalDateTime.now().toString())
-                .instgAgt(buildAgent(paymentRequest.getInstructingAgentBic(), institutionId))
-                .instdAgt(buildAgent(paymentRequest.getInstructedAgentBic(), paymentRequest.getInstructedAgentBic()))
+                .instgAgt(buildAgent(paymentRequestMap.getInstructingAgentBic(), institutionId))
+                .instdAgt(buildAgent(paymentRequestMap.getInstructedAgentBic(), paymentRequestMap.getInstructedAgentBic()))
                 .build();
 
         PaymentApprovalPacs002.OriginalGroupInfoAndStatus originalGroupInfoAndStatus = PaymentApprovalPacs002.OriginalGroupInfoAndStatus.builder()
@@ -77,10 +78,10 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
                 .build();
 
         PaymentApprovalPacs002.TransactionInfoAndStatus txInfoAndStatus = PaymentApprovalPacs002.TransactionInfoAndStatus.builder()
-                .instgAgt(buildAgent(paymentRequest.getInstructingAgentBic(), institutionId))
-                .instdAgt(buildAgent(paymentRequest.getInstructedAgentBic(), paymentRequest.getInstructedAgentBic()))
+                .instgAgt(buildAgent(paymentRequestMap.getInstructingAgentBic(), institutionId))
+                .instdAgt(buildAgent(paymentRequestMap.getInstructedAgentBic(), paymentRequestMap.getInstructedAgentBic()))
                 .orgnlTxRef(PaymentApprovalPacs002.OriginalTransactionReference.builder()
-                        .intrBkSttlmDt(paymentRequest.getInterbankSettlementDate())
+                        .intrBkSttlmDt(paymentRequestMap.getInterbankSettlementDate())
                         .build())
                 .build();
 
@@ -104,7 +105,7 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
                 .build();
     }
 
-    private PaymentRequestPacs008 buildPacs008(PaymentRequest request) {
+    private PaymentRequestPacs008 buildPacs008(PaymentRequestMap request) {
         String msgId = MessageIdGenerator.generateMessageId(institutionId);
 
         PaymentRequestPacs008.GroupHeader groupHeader = getGroupHeader(request, msgId);
@@ -124,7 +125,7 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
                 .build();
     }
 
-    private  PaymentRequestPacs008.CreditTransferTransactionInformation getCreditTransferTransactionInformation(PaymentRequest request, String msgId) {
+    private  PaymentRequestPacs008.CreditTransferTransactionInformation getCreditTransferTransactionInformation(PaymentRequestMap request, String msgId) {
         return PaymentRequestPacs008.CreditTransferTransactionInformation.builder()
                 .pmtId(PaymentRequestPacs008.PaymentId.builder()
                         .instrId(msgId)
@@ -208,7 +209,7 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
                 .build();
     }
 
-    private  PaymentRequestPacs008.SupplementaryData getSupplementaryData(PaymentRequest request) {
+    private  PaymentRequestPacs008.SupplementaryData getSupplementaryData(PaymentRequestMap request) {
         return PaymentRequestPacs008.SupplementaryData.builder()
                 .plcAndNm("CustomData")
                 .envlp(PaymentRequestPacs008.Envelope.builder()
@@ -233,7 +234,7 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
                 .build();
     }
 
-    private  PaymentRequestPacs008.GroupHeader getGroupHeader(PaymentRequest request, String msgId) {
+    private  PaymentRequestPacs008.GroupHeader getGroupHeader(PaymentRequestMap request, String msgId) {
 
         return PaymentRequestPacs008.GroupHeader.builder()
                 .msgId(msgId)
