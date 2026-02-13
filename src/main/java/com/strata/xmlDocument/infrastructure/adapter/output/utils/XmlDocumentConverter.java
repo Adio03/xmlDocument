@@ -23,7 +23,6 @@ public class XmlDocumentConverter {
 
 
     public static <T> Document marshallToDocument(T jaxbObject, Class<T> incomingClass) throws Exception {
-        log.info("Converting {} to Document", incomingClass.getSimpleName());
 
         JAXBContext context = JAXBContext.newInstance(incomingClass);
         Marshaller marshaller = context.createMarshaller();
@@ -33,11 +32,9 @@ public class XmlDocumentConverter {
         marshaller.marshal(jaxbObject, writer);
         String xmlString = writer.toString();
 
-
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-
         return documentBuilder.parse(new InputSource(new StringReader(xmlString)));
     }
 
@@ -54,5 +51,13 @@ public class XmlDocumentConverter {
         StringWriter sw = new StringWriter();
         transformer.transform(new DOMSource(document), new StreamResult(sw));
         return sw.toString();
+    }
+
+    public static Document parseXmlString(String xmlString) throws Exception {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        
+        return documentBuilder.parse(new InputSource(new StringReader(xmlString)));
     }
 }

@@ -25,7 +25,9 @@ public class Encrypter {
 
     }
 
-    public static String encrypt(Document document, PublicKey pubKey) throws Exception {
+
+
+    public static String encrypt(Document document, PublicKey pubKey,String rootTag) throws Exception {
 
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         keyGen.init(256);
@@ -45,11 +47,11 @@ public class Encrypter {
         keyInfo.add(encryptedKey);
         encryptedData.setKeyInfo(keyInfo);
 
-        Element elementToEncrypt = (Element) document.getElementsByTagName("IdVrfctnReq").item(0);
+        Element elementToEncrypt = (Element) document.getElementsByTagName(rootTag).item(0);
 
 
         if (elementToEncrypt == null) {
-            throw new IllegalStateException("Element 'IdVrfctnReq' not found in document!");
+            throw new IllegalStateException("Element ${rootTag} not found in document!");
         }
 
         log.info("Encrypting element: {}", elementToEncrypt.getTagName());

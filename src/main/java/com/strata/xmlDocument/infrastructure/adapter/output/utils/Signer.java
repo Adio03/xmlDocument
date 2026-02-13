@@ -44,25 +44,19 @@ public final class Signer {
         signature.sign(dsc);
     }
 
-    public static boolean validateXmlSignature(Document document, PublicKey publicKey) throws Exception {
-        // 1. Debug log: Show modulus of public key used
+    public static boolean validateXmlSignature(Document doc, PublicKey publicKey) throws Exception {
 
-        // 2. Locate the Signature element in the XML
-        NodeList nodeList = document.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
-        if (nodeList == null || nodeList.getLength() == 0) {
+        NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+        if (nl == null || nl.getLength() == 0) {
             throw new Exception("Cannot find Signature element");
         }
 
-        // 3. Create an XMLSignatureFactory for DOM processing
         XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
 
-        // 4. Create a validation context using the provided public key
-        DOMValidateContext valContext = new DOMValidateContext(publicKey, nodeList.item(0));
+        DOMValidateContext valContext = new DOMValidateContext(publicKey, nl.item(0));
 
-        // 5. Unmarshal the XMLSignature into a usable object
         XMLSignature signature = fac.unmarshalXMLSignature(valContext);
 
-        // 6. Validate the signature
         return signature.validate(valContext);
     }
 }

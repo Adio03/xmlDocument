@@ -2,9 +2,11 @@ package com.strata.xmlDocument.domain.service;
 
 import com.strata.xmlDocument.application.input.IdentityVerificationAcmt023UseCase;
 import com.strata.xmlDocument.domain.model.IdentityVerificationAcmt023;
+import com.strata.xmlDocument.domain.model.types.MessageTypes;
 import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.VerificationRequest;
 import com.strata.xmlDocument.infrastructure.adapter.output.utils.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
@@ -20,21 +22,29 @@ import java.time.format.DateTimeFormatter;
 @Slf4j
 public class IdentityVerificationAcmt023Service implements IdentityVerificationAcmt023UseCase {
 
+    @Value("${institution.id}")
+    private String institutionId;
 
-    private static final String INSTITUTION_ID = "999058";
-    private static final String CREATOR_NAME  = "NIBSS";
-    private static final String PRIVATE_KEY_PATH = "C:\\Users\\semicolon\\Downloads\\xmlDocument\\xmlDocument\\banks_private.pem";
-    private static final String PUBLIC_KEY_PATH = "C:\\Users\\semicolon\\Downloads\\xmlDocument\\xmlDocument\\banks_public.pem";
-    private static final String API_URL = "https://api.example.com/verify";
+    @Value("${creator.name}")
+    private String creatorName;
+
+//    @Value("${nibss.private.key.path}")
+    private final String privateKeyPath = "C:\\Users\\semicolon\\IdeaProjects\\xmlDocument\\banks_private.pem";
+
+//    @Value("${nibss.public.key.path}")
+    private final String publicKeyPath = "C:\\Users\\semicolon\\IdeaProjects\\xmlDocument\\banks_public.pem";
+
+    @Value("${nibss.api.url}")
+    private String apiUrl;
 
 
     @Override
-    public String identityVerification(VerificationRequest verificationRequest) throws Exception {
+    public String identityVerificationOutBoundAcmt023(VerificationRequest verificationRequest) throws Exception {
         IdentityVerificationAcmt023.Assignment assignment = new IdentityVerificationAcmt023.Assignment();
 
         IdentityVerificationAcmt023.Assigner assigner = new IdentityVerificationAcmt023.Assigner();
         IdentityVerificationAcmt023.Agent assignerAgent = getAgent();
-        assigner.setPty(IdentityVerificationAcmt023.Party.builder().nm(CREATOR_NAME).build());
+        assigner.setPty(IdentityVerificationAcmt023.Party.builder().nm(creatorName).build());
         assigner.setAgt(assignerAgent);
 
         IdentityVerificationAcmt023.Assignee assignee = getAssignee(verificationRequest);
@@ -43,12 +53,12 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
         IdentityVerificationAcmt023.PartyWrapper creator =
                 IdentityVerificationAcmt023.PartyWrapper.builder()
                         .pty(IdentityVerificationAcmt023.Party.builder()
-                                .nm(CREATOR_NAME)
+                                .nm(creatorName)
                                 .build())
                         .build();
 
         // Fill Assignment
-        assignment.setMsgId(MessageIdGenerator.generateMessageId(INSTITUTION_ID));
+        assignment.setMsgId(MessageIdGenerator.generateMessageId(institutionId));
         assignment.setCreDtTm(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         assignment.setCretr(creator);
         assignment.setAssgnr(assigner);
@@ -64,29 +74,37 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
                 identityVerificationAcmt023, IdentityVerificationAcmt023.class
 
         );
-        PrivateKey privateKey = GenerateKey.loadPrivateKey(PRIVATE_KEY_PATH);
-        PublicKey publicKey = GenerateKey.loadPublicKey(PUBLIC_KEY_PATH);
+
+        return completeDocumentSetup(createXmlDocument, identityVerificationAcmt023);
+    }
+
+    private String completeDocumentSetup(Document createXmlDocument, IdentityVerificationAcmt023 identityVerificationAcmt023) throws Exception {
+        PrivateKey privateKey = GenerateKey.loadPrivateKey(privateKeyPath);
+        PublicKey publicKey = GenerateKey.loadPublicKey(publicKeyPath);
+        String rootTag = "IdVrfctnReq";
 
         Signer.sign(createXmlDocument, privateKey);
-       String encryptData = Encrypter.encrypt(createXmlDocument, publicKey);
-        HttpSender.sendXML(encryptData,API_URL);
+        String encryptData = Encrypter.encrypt(createXmlDocument, publicKey,rootTag);
+        log.info("DATA =====>>>>>> {}",encryptData);
+        String url ="http://localhost:9200/api/nps/acmt023/inbound_acmt023";
+        HttpSender.sendXML(encryptData, url);
 
         return identityVerificationAcmt023.getIdVrfctnReq().getAssgnmt().getMsgId();
     }
 
-    private static IdentityVerificationAcmt023.Agent getAgent() {
+    private  IdentityVerificationAcmt023.Agent getAgent() {
         IdentityVerificationAcmt023.Agent assignerAgent = new IdentityVerificationAcmt023.Agent();
         IdentityVerificationAcmt023.FinancialInstitutionId assignerFinId = new IdentityVerificationAcmt023.FinancialInstitutionId();
         IdentityVerificationAcmt023.ClearingSystemMemberId assignerClrId = new IdentityVerificationAcmt023.ClearingSystemMemberId();
 
-        assignerClrId.setMmbId(INSTITUTION_ID);
+        assignerClrId.setMmbId(institutionId);
         assignerFinId.setClrSysMmbId(assignerClrId);
-        assignerFinId.setBicfi(INSTITUTION_ID);
+        assignerFinId.setBicfi(institutionId);
         assignerAgent.setFinInstnId(assignerFinId);
         return assignerAgent;
     }
 
-    private static IdentityVerificationAcmt023.Assignee getAssignee(VerificationRequest verificationRequest) {
+    private  IdentityVerificationAcmt023.Assignee getAssignee(VerificationRequest verificationRequest) {
         IdentityVerificationAcmt023.Assignee assignee = new IdentityVerificationAcmt023.Assignee();
         IdentityVerificationAcmt023.Agent assigneeAgent = new IdentityVerificationAcmt023.Agent();
         IdentityVerificationAcmt023.FinancialInstitutionId assigneeFinId = new IdentityVerificationAcmt023.FinancialInstitutionId();
@@ -100,7 +118,7 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
         return assignee;
     }
 
-    private static IdentityVerificationAcmt023.IdVerificationRequest getIdVerificationRequest(VerificationRequest verificationRequest, IdentityVerificationAcmt023.Assignment assignment) {
+    private  IdentityVerificationAcmt023.IdVerificationRequest getIdVerificationRequest(VerificationRequest verificationRequest, IdentityVerificationAcmt023.Assignment assignment) {
         IdentityVerificationAcmt023.Verification verification = new IdentityVerificationAcmt023.Verification();
         verification.setId(assignment.getMsgId());
 
@@ -114,7 +132,7 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
         return idVerificationRequest;
     }
 
-    private static IdentityVerificationAcmt023.PartyAndAccountId getPartyAndAccountId(VerificationRequest verificationRequest) {
+    private IdentityVerificationAcmt023.PartyAndAccountId getPartyAndAccountId(VerificationRequest verificationRequest) {
         IdentityVerificationAcmt023.PartyAndAccountId ptyAndAcctId = new IdentityVerificationAcmt023.PartyAndAccountId();
         IdentityVerificationAcmt023.Party verifiedParty = new IdentityVerificationAcmt023.Party();
         verifiedParty.setNm(verificationRequest.getPartyToVerifyName());
@@ -127,6 +145,22 @@ public class IdentityVerificationAcmt023Service implements IdentityVerificationA
         ptyAndAcctId.setPty(verifiedParty);
         ptyAndAcctId.setAcct(account);
         return ptyAndAcctId;
+    }
+
+    @Override
+    public void identityVerificationInBoundAcmt023(String encryptedData) throws Exception {
+        PrivateKey privateKey = GenerateKey.loadPrivateKey(privateKeyPath);
+        PublicKey publicKey = GenerateKey.loadPublicKey(publicKeyPath);
+        Document decryptedDocument = Decrypter.decrypt(encryptedData,privateKey);
+
+       boolean isValid = Signer.validateXmlSignature(decryptedDocument,publicKey);
+        if(!isValid){
+            log.error("Invalid Signature ===================>>>>>>>>>>>>>");
+        }
+        String decryptedStringValue = XmlDocumentConverter.documentToString(decryptedDocument);
+        log.info("DECRYPTED  ========>>>>>>> {}", decryptedStringValue);
+        String messageType = MessageTypes.ACMT_023.name();
+        FileSaver.saveDecryptMessageToFile(decryptedStringValue,messageType);
     }
 
 }
