@@ -32,9 +32,14 @@ public class XmlDocumentConverter {
         marshaller.marshal(jaxbObject, writer);
         String xmlString = writer.toString();
 
+        return parseXmlString(xmlString);
+    }
+
+    public static Document parseXmlString(String xmlString) throws Exception {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+
         return documentBuilder.parse(new InputSource(new StringReader(xmlString)));
     }
 
@@ -53,11 +58,5 @@ public class XmlDocumentConverter {
         return sw.toString();
     }
 
-    public static Document parseXmlString(String xmlString) throws Exception {
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setNamespaceAware(true);
-        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        
-        return documentBuilder.parse(new InputSource(new StringReader(xmlString)));
-    }
+
 }

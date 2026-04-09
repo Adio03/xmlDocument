@@ -39,6 +39,7 @@ public class IdentityVerificationReportAcmt024Service implements IdentityVerific
         PublicKey publicKey = GenerateKey.loadPublicKey(publicKeyPath);
         Document decryptedDocument = Decrypter.decrypt(encryptData,privateKey);
         Signer.validateXmlSignature(decryptedDocument,publicKey);
+
         String decryptedStringValue = XmlDocumentConverter.documentToString(decryptedDocument);
         log.info("DECRYPTED  ========>>>>>>> {}", decryptedStringValue);
         String messageType = MessageTypes.ACMT_024.name();

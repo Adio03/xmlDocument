@@ -22,7 +22,6 @@ public class IdentityVerificationAcmt023Controller {
     public ResponseEntity<MessageResponse> outboundAcmt023(@RequestBody VerificationRequest request) throws Exception {
         String response = identityVerificationAcmt023UseCase.identityVerificationOutBoundAcmt023(request);
         MessageResponse messageResponse = MessageResponse.builder().messageId(response).build();
-
         return ResponseEntity.accepted().body(messageResponse);
     }
     @PostMapping(value = "/inbound_acmt023", consumes = MediaType.APPLICATION_XML_VALUE)
