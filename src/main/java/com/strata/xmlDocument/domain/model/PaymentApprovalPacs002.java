@@ -132,6 +132,12 @@ public class PaymentApprovalPacs002 {
     @Builder
     public static class TransactionInfoAndStatus {
 
+        @XmlElement(name = "StsId")
+        private String stsId;
+
+        @XmlElement(name = "StsRsnInf")
+        private StatusReasonInformation stsRsnInf;
+
         @XmlElement(name = "InstgAgt", required = true)
         private Agent instgAgt;
 
@@ -140,6 +146,35 @@ public class PaymentApprovalPacs002 {
 
         @XmlElement(name = "OrgnlTxRef", required = true)
         private OriginalTransactionReference orgnlTxRef;
+
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class StatusReasonInformation {
+
+        @XmlElement(name = "Rsn", required = true)
+        private StatusReason rsn;
+
+        @XmlElement(name = "AddtlInf")
+        private String addtlInf;
+
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class StatusReason {
+
+        @XmlElement(name = "Prtry", required = true)
+        private String prtry;
 
     }
 

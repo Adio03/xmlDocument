@@ -5,6 +5,10 @@ import com.strata.xmlDocument.infrastructure.adapter.input.dtos.request.PaymentR
 
 public interface PaymentApprovalPacs002UseCase {
     String generatePaymentApproval(PaymentRequestMap paymentRequestMap, PaymentRequestPacs008 originalRequest) throws Exception;
-//    PaymentApprovalPacs002 buildPaymentApproval(PaymentRequest paymentRequest, PaymentRequestPacs008 originalRequest);
+    String generatePaymentApproval(PaymentRequestMap paymentRequestMap,
+                                   PaymentRequestPacs008 originalRequest,
+                                   boolean approved,
+                                   String reasonCode,
+                                   String reasonDescription) throws Exception;
     void receiveInboundPacs002(String encryptedResponse) throws Exception;
 }

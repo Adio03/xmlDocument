@@ -24,6 +24,10 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCase {
+    private static final String INVALID_ACCOUNT_REASON_CODE = "AC01";
+    private static final String PROCESSING_ERROR_REASON_CODE = "002";
+    private static final String SIGNATURE_ERROR_REASON_CODE = "901";
+
     @Value("${institution.id}")
     private  String institutionId;
     
@@ -268,11 +272,129 @@ public class PaymentRequestPacs008Service implements PaymentRequestPacs008UseCas
         PrivateKey privateKey = GenerateKey.loadPrivateKey(privateKeyPath);
         PublicKey publicKey = GenerateKey.loadPublicKey(publicKeyPath);
         Document decryptedDocument = Decrypter.decrypt(encryptedData,privateKey);
-        Signer.validateXmlSignature(decryptedDocument,publicKey);
+        PaymentRequestPacs008 pacs008 = XmlDocumentConverter.unmarshallFromDocument(decryptedDocument, PaymentRequestPacs008.class);
+        boolean isValidSignature = Signer.validateXmlSignature(decryptedDocument,publicKey);
         String decryptedStringValue = XmlDocumentConverter.documentToString(decryptedDocument);
         log.info("DECRYPTED  ========>>>>>>> {}", decryptedStringValue);
         String messageType = MessageTypes.PACS_008.name();
         FileSaver.saveDecryptMessageToFile(decryptedStringValue,messageType);
+
+        PaymentRequestMap paymentRequestMap = mapInboundPaymentRequest(pacs008);
+
+        if (!isValidSignature) {
+            paymentApprovalService.generatePaymentApproval(
+                    paymentRequestMap,
+                    pacs008,
+                    false,
+                    SIGNATURE_ERROR_REASON_CODE,
+                    "Invalid signature in PACS.008 request"
+            );
+            return;
+        }
+
+        try {
+            String creditorAccountNumber = pacs008.getFicoCustomerCreditTransfer()
+                    .getCdtTrfTxInf()
+                    .getCdtrAcct()
+                    .getId()
+                    .getIban();
+
+            if (!isValidAccountNumber(creditorAccountNumber)) {
+                paymentApprovalService.generatePaymentApproval(
+                        paymentRequestMap,
+                        pacs008,
+                        false,
+                        INVALID_ACCOUNT_REASON_CODE,
+                        "Wrong account number"
+                );
+                return;
+            }
+
+            paymentApprovalService.generatePaymentApproval(paymentRequestMap, pacs008);
+        } catch (Exception exception) {
+            log.error("Failed to process inbound PACS.008", exception);
+            paymentApprovalService.generatePaymentApproval(
+                    paymentRequestMap,
+                    pacs008,
+                    false,
+                    PROCESSING_ERROR_REASON_CODE,
+                    buildFailureReason(exception)
+            );
+        }
     }
 
+    private PaymentRequestMap mapInboundPaymentRequest(PaymentRequestPacs008 pacs008) {
+        PaymentRequestPacs008.FIToFICstmrCdtTrf transfer = pacs008.getFicoCustomerCreditTransfer();
+        PaymentRequestPacs008.GroupHeader groupHeader = transfer.getGrpHdr();
+        PaymentRequestPacs008.CreditTransferTransactionInformation txInfo = transfer.getCdtTrfTxInf();
+
+        PaymentRequestMap paymentRequestMap = new PaymentRequestMap();
+        paymentRequestMap.setInstructingAgentBic(extractBic(groupHeader.getInstgAgt()));
+        paymentRequestMap.setInstructedAgentBic(extractBic(groupHeader.getInstdAgt()));
+        paymentRequestMap.setDebtorName(txInfo.getDbtr().getName());
+        paymentRequestMap.setDebtorAccountIban(txInfo.getDbtrAcct().getId().getIban());
+        paymentRequestMap.setDebtorAccountName(txInfo.getDbtrAcct().getName());
+        paymentRequestMap.setCreditorName(txInfo.getCdtr().getName());
+        paymentRequestMap.setCreditorAccountIban(txInfo.getCdtrAcct().getId().getIban());
+        paymentRequestMap.setCreditorAccountName(txInfo.getCdtrAcct().getName());
+        paymentRequestMap.setInterbankSettlementAmount(txInfo.getIntrBkSttlmAmt().getValue().toPlainString());
+        paymentRequestMap.setInterbankSettlementCurrency(txInfo.getIntrBkSttlmAmt().getCurrency());
+        paymentRequestMap.setInterbankSettlementDate(txInfo.getIntrBkSttlmDt().toString());
+        paymentRequestMap.setChargesBearer(txInfo.getChrgBr());
+        if (txInfo.getPmtTpInf() != null) {
+            paymentRequestMap.setClearingChannel(txInfo.getPmtTpInf().getClrChanl());
+            paymentRequestMap.setServiceLevel(extractProprietaryValue(txInfo.getPmtTpInf().getSvcLvl()));
+            paymentRequestMap.setLocalInstrument(extractProprietaryValue(txInfo.getPmtTpInf().getLclInstrm()));
+            paymentRequestMap.setCategoryPurpose(extractProprietaryValue(txInfo.getPmtTpInf().getCtgyPurp()));
+        }
+        if (txInfo.getInstrForNxtAgt() != null && !txInfo.getInstrForNxtAgt().isEmpty()) {
+            paymentRequestMap.setDebtorInstructionInfo(txInfo.getInstrForNxtAgt().get(0).getInstrInf());
+        }
+        if (txInfo.getRmtInf() != null) {
+            paymentRequestMap.setRemittanceInformation(txInfo.getRmtInf().getUstrd());
+        }
+        if (transfer.getSplmtryData() != null && transfer.getSplmtryData().getEnvlp() != null
+                && transfer.getSplmtryData().getEnvlp().getCustomData() != null) {
+            PaymentRequestPacs008.CustomData customData = transfer.getSplmtryData().getEnvlp().getCustomData();
+            if (customData.getDebtorInfo() != null) {
+                paymentRequestMap.setDebtorAccountDesignation(customData.getDebtorInfo().getAccountDesignation());
+                paymentRequestMap.setDebtorIdType(customData.getDebtorInfo().getIdType());
+                paymentRequestMap.setDebtorIdValue(customData.getDebtorInfo().getIdValue());
+                paymentRequestMap.setDebtorAccountTier(customData.getDebtorInfo().getAccountTier());
+            }
+            if (customData.getCreditorInfo() != null) {
+                paymentRequestMap.setCreditorAccountDesignation(customData.getCreditorInfo().getAccountDesignation());
+                paymentRequestMap.setCreditorIdType(customData.getCreditorInfo().getIdType());
+                paymentRequestMap.setCreditorIdValue(customData.getCreditorInfo().getIdValue());
+                paymentRequestMap.setCreditorAccountTier(customData.getCreditorInfo().getAccountTier());
+            }
+            if (customData.getTransactionInfo() != null) {
+                paymentRequestMap.setTransactionLocation(customData.getTransactionInfo().getTransactionLocation());
+            }
+        }
+        return paymentRequestMap;
+    }
+
+    private String extractBic(PaymentRequestPacs008.Agent agent) {
+        if (agent == null || agent.getFinInstnId() == null) {
+            return null;
+        }
+        return agent.getFinInstnId().getBicfi();
+    }
+
+    private String extractProprietaryValue(PaymentRequestPacs008.Proprietary proprietary) {
+        return proprietary == null ? null : proprietary.getPrtry();
+    }
+
+    private boolean isValidAccountNumber(String accountNumber) {
+        return accountNumber != null && accountNumber.matches("\\d{10}");
+    }
+
+    private String buildFailureReason(Exception exception) {
+        String message = exception.getMessage();
+        if (message == null || message.isBlank()) {
+            return "Transaction processing failed";
+        }
+        return message;
+    }
 }

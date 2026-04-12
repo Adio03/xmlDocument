@@ -1,9 +1,10 @@
 package com.strata.xmlDocument.infrastructure.adapter.output.utils;
 
-import com.strata.xmlDocument.domain.model.IdentityVerificationAcmt023;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -41,6 +42,22 @@ public class XmlDocumentConverter {
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 
         return documentBuilder.parse(new InputSource(new StringReader(xmlString)));
+    }
+
+    public static <T> T unmarshallFromDocument(Document document, Class<T> incomingClass) throws JAXBException {
+        JAXBContext context = JAXBContext.newInstance(incomingClass);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        Object result = unmarshaller.unmarshal(document);
+
+        if (incomingClass.isInstance(result)) {
+            return incomingClass.cast(result);
+        }
+
+        if (result instanceof JAXBElement<?> jaxbElement && incomingClass.isInstance(jaxbElement.getValue())) {
+            return incomingClass.cast(jaxbElement.getValue());
+        }
+
+        throw new JAXBException("Unable to unmarshall XML document into " + incomingClass.getName());
     }
 
 
