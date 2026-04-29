@@ -92,8 +92,14 @@ public class PaymentApprovalPacs002Service implements PaymentApprovalPacs002UseC
                 .grpSts(approved ? "ACSC" : "RJCT")
                 .build();
 
+        PaymentRequestPacs008.PaymentId pmtId = originalRequest.getFicoCustomerCreditTransfer()
+                .getCdtTrfTxInf().getPmtId();
+
         PaymentApprovalPacs002.TransactionInfoAndStatus txInfoAndStatus = PaymentApprovalPacs002.TransactionInfoAndStatus.builder()
-                .stsId(approved ? null : "NAUT")
+                .stsId(approved ? "AUTH" : "RJCT")
+                .orgnlInstrId(pmtId.getInstrId())
+                .orgnlEndToEndId(pmtId.getEndToEndId())
+                .orgnlTxId(pmtId.getTxId())
                 .stsRsnInf(approved ? null : PaymentApprovalPacs002.StatusReasonInformation.builder()
                         .rsn(PaymentApprovalPacs002.StatusReason.builder()
                                 .prtry(defaultIfBlank(reasonCode, "002"))

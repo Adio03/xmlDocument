@@ -135,6 +135,15 @@ public class PaymentApprovalPacs002 {
         @XmlElement(name = "StsId")
         private String stsId;
 
+        @XmlElement(name = "OrgnlInstrId")
+        private String orgnlInstrId;
+
+        @XmlElement(name = "OrgnlEndToEndId")
+        private String orgnlEndToEndId;
+
+        @XmlElement(name = "OrgnlTxId")
+        private String orgnlTxId;
+
         @XmlElement(name = "StsRsnInf")
         private StatusReasonInformation stsRsnInf;
 

@@ -483,4 +483,14 @@ public class BankToCustomerAccountReportCamt052 {
         @XmlElement(name = "BICFI")
         private String bicfi;
     }
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class InstructedAgent{
+        @XmlElement(name)
+    }
+
 }
